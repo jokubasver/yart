@@ -70,7 +70,7 @@ class TelecineCamera(PiCamera) :
         self.bracket_steps = 1
         self.shutter_speed_wait = 4
         self.shutter_auto_wait = 8
-        self.use_video_port = True
+        self.use_video_port = False
         self.bracket_dark_coefficient = 0.1
         self.bracket_light_coefficient = 1.5
         self.capture_method =CAPTURE_ON_FRAME
@@ -292,7 +292,7 @@ class TelecineCamera(PiCamera) :
         resize = self.resolution
         if self.doResize == True :
             resize = (self.resize[0], self.resize[1])
-        self.capture_sequence(self.dummyGenerator(count), format="jpeg", use_video_port=True,resize=resize)
+        self.capture_sequence(self.dummyGenerator(count), format="jpeg", use_video_port=self.use_video_port,resize=resize)
     
     def doMaxSpeed(self) :
         if self.bracket_steps != 1 : #Reduce motor speed
@@ -331,7 +331,7 @@ class TelecineCamera(PiCamera) :
         if self.doResize == True :
             resize = (self.resize[0], self.resize[1])
         stream = BytesIO()
-        camera.capture(stream, format="jpeg", quality=100, use_video_port=True, resize=resize)
+        camera.capture(stream, format="jpeg", quality=100, use_video_port=self.use_video_port, resize=resize)
         stream.seek(0)
         image = stream.getvalue()
         header = {'type':HEADER_IMAGE, 'count':motor.frameCounter, 'bracket':0, 'shutter':self.exposure_speed,'gains':self.awb_gains,'analog_gain':self.analog_gain,'digital_gain':self.digital_gain}
@@ -352,7 +352,7 @@ class TelecineCamera(PiCamera) :
             resize = (self.resize[0], self.resize[1])
         print("Resize:", resize, " Doresize", self.doResize)
         with picamera.array.PiRGBArray(camera,  size=resize) as output:
-            camera.capture(output, format='rgb', resize=resize, use_video_port=True)
+            camera.capture(output, format='rgb', resize=resize, use_video_port=self.use_video_port)
             return output.array
 
     def get_bgr_image(self):
@@ -361,7 +361,7 @@ class TelecineCamera(PiCamera) :
             resize = (self.resize[0], self.resize[1])
         print("Resize:", resize, " Doresize", self.doResize)
         with picamera.array.PiRGBArray(self,  size=resize) as output:
-            self.capture(output, format='bgr', resize=resize, use_video_port=True)
+            self.capture(output, format='bgr', resize=resize, use_video_port=self.use_video_port)
             return output.array
         
     def get_bgr_mean(self, num) :

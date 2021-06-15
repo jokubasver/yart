@@ -3,12 +3,11 @@
 ## Changes:
 
  - Includes refactored GUI made by patsib: https://github.com/patsib/yart_gui
- - JPEG Quality set to 100
+ - Uses stills port with JPEG Quality set to 100
 
 ## To-do:
 
- - Fix framerate get and test buttons (doesn't properly set the values and also gives socket timeout error)
- - Fix Mertens merge (right now it cranks contrast to the max for some reason)
+ - Fix framerate get and test buttons (doesn't put the values in automatically, and also gives socket timeout error, otherwise seems to work)
  - Add support for RAW capturing and DNG conversion with PyDNG: https://github.com/schoolpost/PyDNG
  - Add support for TMC2209 UART: https://github.com/Chr157i4n/TMC2209_Raspberry_Pi
 

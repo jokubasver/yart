@@ -108,6 +108,7 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.displaySharpness = False
         self.mergeType = MERGE_NONE
         self.onTriggerButton.setEnabled(True)
+        #self.onTriggerButton.setEnabled(True)
         self.autoPauseCheckBox.setEnabled(False)
         self.lensAnalyseButton.setEnabled(False)
         self.calibrateLocalButton.setEnabled(False)
@@ -236,6 +237,7 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
     def motorOnTrigger(self):
         self.setMotorSettings({'speed': self.motorSpeedBox.value()})
         self.sock.sendObject((MOTOR_ON_TRIGGER,))
+		
 
     def motorCalibrate(self):
         self.setMotorSettings({'speed': self.motorSpeedBox.value()})
@@ -633,9 +635,9 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
 #        if resize == None:
         if resize is None:
             resizeTo = self.resolution
-# For some reason this breaks code. Disable for now
-#        self.resizewBox.setValue(resizeTo[0])
-#        self.resizehBox.setValue(resizeTo[1])
+# For some reason this broke everything previously, but not anymore. Be careful.
+        self.resizewBox.setValue(resizeTo[0])
+        self.resizehBox.setValue(resizeTo[1])
         
         self.resizeCheckBox.setChecked(settings['doResize'])
         return settings
