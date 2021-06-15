@@ -331,7 +331,7 @@ class TelecineCamera(PiCamera) :
         if self.doResize == True :
             resize = (self.resize[0], self.resize[1])
         stream = BytesIO()
-        camera.capture(stream, format="jpeg", quality=95, use_video_port=True, resize=resize)
+        camera.capture(stream, format="jpeg", quality=100, use_video_port=True, resize=resize)
         stream.seek(0)
         image = stream.getvalue()
         header = {'type':HEADER_IMAGE, 'count':motor.frameCounter, 'bracket':0, 'shutter':self.exposure_speed,'gains':self.awb_gains,'analog_gain':self.analog_gain,'digital_gain':self.digital_gain}
