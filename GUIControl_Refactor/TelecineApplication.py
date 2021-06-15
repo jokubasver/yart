@@ -34,6 +34,7 @@ localSettings = (
     'mode',
     'tape',
     'clip',
+	'merge',
     'startframe',
     'reduceFactor',
     'motorSpeed',
@@ -85,6 +86,7 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.clip = 1
         self.startframe = 1
         self.mode = 2
+        self.merge = MERGE_NONE
         self.resolution = None
         self.reduceFactor = 1
         self.cameraVersion = ''
@@ -116,6 +118,9 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.plotDialog = None
         self.whiteBalanceButton.setEnabled(False)
         self.maxFpsButton.setEnabled(False)
+        self.maxSpeedButton.setEnabled(False)
+        self.onTriggerButton.setEnabled(False)
+        self.onFrameButton.setEnabled(False)
         self.redGain = 100
         self.blueGain = 100
 
@@ -178,6 +183,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.motorOnButton.setText('Turn off')
         self.motorOnButton.setStyleSheet("background-color: #00b95a")
         self.motorCalibrateButton.setEnabled(True)
+        self.onTriggerButton.setEnabled(True)
+        self.onFrameButton.setEnabled(True)
         self.motorIsOn = True
 
     def motorOff(self):
@@ -187,6 +194,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.motorControlGroupBox.setEnabled(False)
         self.motorSettingsGroupBox.setEnabled(True)
         self.motorCalibrateButton.setEnabled(False)
+        self.onTriggerButton.setEnabled(False)
+        self.onFrameButton.setEnabled(False)
         self.motorIsOn = False
 
     def forwardOne(self):
@@ -267,6 +276,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
 #        self.pulseLevelCheckBox.setChecked(settings['pulse_level'] == 1)
         self.triggerLevelCheckBox.setChecked(settings['trigger_level'] == 1)
         self.afterTriggerCheckBox.setChecked(settings['after_trigger'] == 1)
+        self.motorSpeedBox.setValue(settings['speed'])
+        self.captureMotorSpeedBox.setValue(settings['capture_speed'])
         return settings
 
     # collect all local settings from GUI and store to self
@@ -354,6 +365,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.calibrateLocalButton.setEnabled(False)
         self.whiteBalanceButton.setEnabled(False)
         self.maxFpsButton.setEnabled(False)
+        self.hresLineEdit.setText(str(""))
+        self.vresLineEdit.setText(str(""))
         self.cameraIsOpen = False
         self.openCameraButton.setText('Open camera')
         self.openCameraButton.setStyleSheet("background-color: #e3e3e3")
@@ -425,6 +438,12 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
             y = int((self.resolution[1] - height)/2)
             self.ROIxBox.setValue(x) 
             self.ROIyBox.setValue(y)
+			
+    def setOnTrigger(self) :
+        if self.onTriggerButton.isChecked() :
+            self.maxSpeedButton.setEnabled(True)
+        else :
+            self.maxSpeedButton.setEnabled(False)
 
     def setROI(self):
         roi = (self.ROIxBox.value()/self.resolution[0],
@@ -472,7 +491,7 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         if method != CAPTURE_BASIC:
             self.motorControlGroupBox.setEnabled(False)
             self.cameraControlGroupBox.setEnabled(False)
-            self.sock.sendObject((SET_MOTOR_SETTINGS, {'speed': self.captureMotorSpeedBox.value()}))
+            self.sock.sendObject((SET_MOTOR_SETTINGS, {'capture_speed':self.captureMotorSpeedBox.value()}))
 
         self.setMerge()  # Merge options
         self.setSave()  # Save options
@@ -512,6 +531,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
             self.mergeType = MERGE_MERTENS
         else:
             self.mergeType = MERGE_DEBEVEC
+        if self.imageThread != None :
+            self.imageThread.merge = self.merge
         self.imageThread.merge = self.mergeType
 #        self.imageThread.linearize = self.linearizeCheckBox.isChecked()
 
@@ -530,7 +551,6 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.autoPauseCheckBox.setEnabled(False)
         self.lensAnalyseButton.setEnabled(True)
         self.calibrateLocalButton.setEnabled(True)
-
         self.initGroupBox.setEnabled(True)
         self.sock.sendObject((STOP_CAPTURE,))
         
@@ -590,7 +610,9 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.brightnessBox.setValue(settings['brightness'])
         self.contrastBox.setValue(settings['contrast'])
         self.saturationBox.setValue(settings['saturation'])
+# Was this commented out by Yart-GUI?
 #        self.isoBox.setValue(settings['iso'])
+        self.sharpnessBox.setValue(settings['sharpness'])
         self.exposureCompensationBox.setValue(settings['exposure_compensation'])
         self.bracketCheckBox.setChecked(settings['bracket_steps'] != 1)
         self.lightCoefficientBox.setValue(settings['bracket_light_coefficient'])
@@ -626,6 +648,10 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
     def getCameraSetting(self, myKey):
         self.sock.sendObject((GET_CAMERA_SETTING, myKey))
         return self.sock.receiveObject()
+		
+    def getMotorSetting(self, key):
+        self.sock.sendObject((GET_MOTOR_SETTING, key))
+        return self.sock.receiveObject()
         
     def saveSettings(self):
         self.sock.sendObject((SAVE_SETTINGS,))
@@ -656,7 +682,7 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.sock.sendObject((SET_CAMERA_SETTINGS, {'exposure_compensation': self.exposureCompensationBox.value()}))
                  
     def setIso(self):
-        self.sock.sendObject((SET_CAMERA_SETTINGS, {'iso': self.isoBox.value()}))
+        self.sock.sendObject((SET_CAMERA_SETTINGS, {'iso':self.isoBox.value(),'sharpness':self.sharpnessBox.value()}))
 
     def setFrameRate(self):
         self.sock.sendObject((SET_CAMERA_SETTINGS, {'framerate': self.framerateBox.value()}))
@@ -706,12 +732,28 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.sock.sendObject((TAKE_BGR, HEADER_ANALYZE, 1))
 
     def maxFps(self):
+        self.setResize()
+        self.setFrameRate()
         self.sock.sendObject((MAX_FPS,))
 #        framerate = self.getCameraSetting('framerate')
         self.framerateBox.setValue(self.getCameraSetting('framerate'))
 
-#     def maxSpeed(self):
-#         self.sock.sendObject((MAX_SPEED,))
+#Calculate the max motor speed for OnTrigger capture for current bracket
+    def maxSpeed(self):
+        self.maxFps()
+        brackets = 1
+        if self.bracketCheckBox.isChecked() :
+            brackets = 3
+
+        self.sock.sendObject((SET_CAMERA_SETTINGS, {\
+                                                    'bracket_steps':brackets, \
+                                                    'shutter_speed_wait':self.shutterSpeedWaitBox.value(),\
+                                                    'shutter_auto_wait':self.shutterAutoWaitBox.value(),\
+        }))
+
+        self.sock.sendObject((MAX_SPEED,))
+        self.captureMotorSpeedBox.setValue(self.getMotorSetting('capture_speed'))
+        self.framerateBox.setValue(self.getCameraSetting('framerate'))
 
     def setDirectory(self):
         # if self.root_directory != None:
@@ -736,7 +778,12 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
 #         c.movePosition(QTextCursor::End);
 #         messageTextEdit->setTextCursor(c);
         
+#Signal from ImageThread  closed connection	
     def displayHeader(self, header):
+        if header == None :   #Closed connection by PI
+            self.displayMessage("Closed connection")
+            self.connectDisconnect()
+            return	
         typ = header['type']
         if typ == HEADER_IMAGE:
             gains = header['gains']
@@ -853,7 +900,11 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
 
     def disconnect(self):
         if self.connected:
+            self.connected = False
+            self.closeCamera()
+            self.motorOff()
             self.sock.sendObject((TERMINATE,))
+            print("Terminate sended")
             self.sock.shutdown()
             self.sock.close()
             self.connected = False
@@ -888,6 +939,10 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
             self.motorSpeedBox.setValue(self.motorSpeed)
             self.captureMotorSpeedBox.setValue(self.captureMotorSpeed)
             self.setDirectory()
+            if self.merge != None :
+                self.mergeNoneRadioButton.setChecked(self.merge == MERGE_NONE) 
+                self.mergeMertensRadioButton.setChecked(self.merge == MERGE_MERTENS) 
+                self.mergeDebevecRadioButton.setChecked(self.merge == MERGE_DEBEVEC) 
             #
             self.reduceFactorBox.blockSignals(True)
             self.reduceFactorBox.setValue(self.reduceFactor)
@@ -1008,7 +1063,7 @@ if __name__ == '__main__':
         sys.exit(app.exec_())
 
     finally:
-        print('finally')
+        print('TelecineApplication finally')
         # if commandDialog != None :
         if commandDialog is not None:
             commandDialog.saveLocalSettings()

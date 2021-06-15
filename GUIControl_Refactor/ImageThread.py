@@ -49,14 +49,18 @@ class ImageThread (QThread):
         self.window = None
         self.saveOn = False
         self.startframe = 1
-        self.mergeMertens = cv2.createMergeMertens(1, 1, 1)
+        self.mergeMertens = cv2.createMergeMertens(0,1,1) #contrast saturation exposure
 #         self.mergeMertens = cv2.createMergeMertens()
 #         print("Contrast:",self.mergeMertens.getContrastWeight())
 #         print("Saturation:",self.mergeMertens.getSaturationWeight())
 #         print("Exposure:",self.mergeMertens.getExposureWeight())
         self.mergeDebevec = cv2.createMergeDebevec()
         self.calibrateDebevec = cv2.createCalibrateDebevec()
-        self.toneMap = cv2.createTonemapReinhard()
+#         self.toneMap = cv2.createTonemapReinhard(gamma=1.)
+        self.toneMap = cv2.createTonemapDrago()
+#        self.linearTonemap = cv2.createTonemap(1.)  #Normalize with Gamma 1.2
+
+#        self.toneMap = cv2.createTonemapMantiuk()
 #        self.claheProc = cv2.createCLAHE(clipLimit=1, tileGridSize=(8,8))
 #        self.simpleWB = cv2.xphoto.createSimpleWB()
 #        self.simpleWB = cv2.xphoto.createGrayworldWB()
@@ -142,13 +146,16 @@ class ImageThread (QThread):
                 return
             else:
                 if self.merge == MERGE_MERTENS:
-                    image = self.mergeMertens.process(self.images)
+#                    image = self.mergeMertens.process(self.images)
                     image = cv2.normalize(image, None, 0., 1., cv2.NORM_MINMAX)
+
                 else:
                     times = np.asarray(self.shutters, dtype=np.float32)/1000000.
 #                    responseDebevec = self.calibrateDebevec.process(self.images, times)
 #                    image = self.mergeDebevec.process(self.images, times, responseDebevec)
+#                    self.alignMTB.process(self.images, self.images)
                     image = self.mergeDebevec.process(self.images, times)
+#                    cv2.imwrite(self.directory + "/image_%#05d.hdr" % count, image)
                     image = self.toneMap.process(image)
                 if self.doCalibrate:
                     image = image * self.table
@@ -189,7 +196,10 @@ class ImageThread (QThread):
                 file.write(jpeg)
                 file.close()
             else:
-                cv2.imwrite(self.directory + "/image_%#05d.jpg" % self.currentframe, image)
+                if bracket != 0 and self.merge == MERGE_NONE :
+                    cv2.imwrite(self.directory + "/image_%#05d_%#02d.jpg" % (count, bracket), image)
+                else :
+                    cv2.imwrite(self.directory + "/image_%#05d.jpg" % count, image)
                 
         if isJpeg and bracket == 0 and self.sharpness:
             sharpness = cv2.Laplacian(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
@@ -246,7 +256,7 @@ class ImageThread (QThread):
         self.plotSignal.emit(image)  # «display plot in the GUI
 #        plt.show()
 
-# Normalize each channel toward the Min
+# Normalize each channel toward the mean
     def calibrate(self, header):
         image = self.imageSock.receiveArray()  # bgr
         i = header['num']
@@ -266,8 +276,8 @@ class ImageThread (QThread):
             self.table = gains
         else:
             self.table = self.table*gains
-#         print(np.min(self.table, axis=(0, 1)))
-#         print(np.max(self.table, axis=(0, 1)))
+        print(np.min(self.table, axis=(0,1)))
+        print(np.max(self.table, axis=(0,1)))
 #        self.table[self.table>1.] = 1.
         if i == count - 1:
             np.savez('calibrate.npz', table=self.table)
@@ -278,6 +288,10 @@ class ImageThread (QThread):
         self.saveOn = saveFlag
         self.directory = directory
         self.startframe = startframe
+		
+    def processBgr(self, header):
+        image = self.imageSock.receiveArray()  #bgr
+        cv2.imwrite(self.directory + "/image_%#05d.tiff" % 0, image)
 
     def run(self):
         print('ImageThread started')
@@ -294,18 +308,19 @@ class ImageThread (QThread):
                     print('Closed connection')
                     cv2.destroyAllWindows()
                     # if self.imageSock != None:
-                    if self.imageSock is not None:
-                        self.imageSock.close()
+                    print('ImageThread closed connection')
+                    self.headerSignal.emit(None) #Signal to disconnect
                     break
                 typ = header['type']
                 if typ == HEADER_STOP:
+                    self.headerSignal.emit(header) #«display header info in GUI if necessary (count,...)
                     break
                 self.headerSignal.emit(header)  # «display header info in GUI if necessary (count,...)
                 if typ == HEADER_IMAGE:
                     image = self.imageSock.receiveMsg()
                     self.processImage(header, image)
                 elif typ == HEADER_BGR:
-                    self.processBgr()
+                    self.processBgr(header)
                 elif typ == HEADER_CALIBRATE:
                     self.calibrate(header)
                 elif typ == HEADER_ANALYZE:
