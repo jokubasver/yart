@@ -256,7 +256,9 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
             'dir_level': 1 if self.dirLevelCheckBox.isChecked() else 0,
             'ena_level': 1 if self.enaLevelCheckBox.isChecked() else 0,
             'trigger_level': 1 if self.triggerLevelCheckBox.isChecked() else 0,
-            'after_trigger': 1 if self.afterTriggerCheckBox.isChecked() else 0
+            'after_trigger': 1 if self.afterTriggerCheckBox.isChecked() else 0,
+            'tmc_use': 1 if self.tmcUseCheckBox.isChecked() else 0,
+            'tmc_spreadcycle': 1 if self.tmcUseSpreadCycle.isChecked() else 0
             }))
 
 # Get and display motor settings
@@ -277,6 +279,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.afterTriggerCheckBox.setChecked(settings['after_trigger'] == 1)
         self.motorSpeedBox.setValue(settings['speed'])
         self.captureMotorSpeedBox.setValue(settings['capture_speed'])
+        self.tmcUseCheckBox.setChecked(settings['tmc_use'] == 1)
+        self.tmcUseSpreadCycle.setChecked(settings['tmc_spreadcycle'] == 1)
         return settings
 
     # collect all local settings from GUI and store to self
@@ -635,8 +639,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         if resize is None:
             resizeTo = self.resolution
 # For some reason this broke everything previously, but not anymore. Be careful.
-        self.resizewBox.setValue(resizeTo[0])
-        self.resizehBox.setValue(resizeTo[1])
+        #self.resizewBox.setValue(resizeTo[0])
+        #self.resizehBox.setValue(resizeTo[1])
         
         self.resizeCheckBox.setChecked(settings['doResize'])
         return settings

@@ -10,6 +10,8 @@ from queue import Queue
 sys.path.append('../Common')
 from Constants import *
 
+from TMC_2209.TMC_2209_StepperDriver import *
+
 
 class TelecineMotor() :
       
@@ -38,6 +40,8 @@ class TelecineMotor() :
         self.tick=0
         self.after_trigger = True
         self.triggerCount = 0
+        self.tmc_use = 0
+        self.tmc_spreadcycle = 0
 
     def on(self) :
         self.frameCounter = 0
@@ -59,6 +63,30 @@ class TelecineMotor() :
                 self.triggerCallback = self.pi.callback(self.trigger_pin, pigpio.RISING_EDGE, self.trigger)
                 self.pi.set_pull_up_down(self.trigger_pin, pigpio.PUD_DOWN)
             self.pi.set_glitch_filter(self.trigger_pin, 100)
+			
+        if self.tmc_use == 1:
+            # Initiate the TMC_2209 class
+            self.tmc = TMC_2209(self.pulse_pin, self.dir_pin, self.ena_pin)
+
+            # Set TMC_2209 debug level
+            self.tmc.setLoglevel(Loglevel.debug)
+
+            # Read and print the current settings in the TMC_2209 register
+            self.tmc.readIOIN()
+            self.tmc.readCHOPCONF()
+            self.tmc.readDRVSTATUS()
+            self.tmc.readGCONF()
+
+            if self.tmc_spreadcycle == 1:
+                self.tmc.setSpreadCycle(True)
+            else:
+                self.tmc.setSpreadCycle(False)
+
+        else:
+            try:
+                del self.tmc
+            except:
+                pass
         
     def off(self) :
         if self.ena_pin != 0 :
