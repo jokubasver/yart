@@ -9,6 +9,7 @@
 
  - Add support for TMC2209 UART: https://github.com/Chr157i4n/TMC2209_Raspberry_Pi
  - Fix GUI from latest yart changes merged in to yart_gui
+ - Add support for RAW capturing and DNG conversion with PyDNG: https://github.com/schoolpost/PyDNG
 
 ## Original Text:
 
