@@ -7,9 +7,10 @@
 
 ## To-do:
 
- - Add support for TMC2209 UART: https://github.com/Chr157i4n/TMC2209_Raspberry_Pi
- - Fix GUI from latest yart changes merged in to yart_gui
+ - Fix framerate get and test buttons (doesn't properly set the values and also gives socket timeout error)
+ - Fix Mertens merge (right now it cranks contrast to the max for some reason)
  - Add support for RAW capturing and DNG conversion with PyDNG: https://github.com/schoolpost/PyDNG
+ - Add support for TMC2209 UART: https://github.com/Chr157i4n/TMC2209_Raspberry_Pi
 
 ## Original Text:
 
