@@ -49,14 +49,14 @@ class ImageThread (QThread):
         self.window = None
         self.saveOn = False
         self.startframe = 1
-        self.mergeMertens = cv2.createMergeMertens(0,1,1) #contrast saturation exposure
+        self.mergeMertens = cv2.createMergeMertens(0, 1, 1) #contrast saturation exposure
 #         self.mergeMertens = cv2.createMergeMertens()
 #         print("Contrast:",self.mergeMertens.getContrastWeight())
 #         print("Saturation:",self.mergeMertens.getSaturationWeight())
 #         print("Exposure:",self.mergeMertens.getExposureWeight())
         self.mergeDebevec = cv2.createMergeDebevec()
         self.calibrateDebevec = cv2.createCalibrateDebevec()
-#         self.toneMap = cv2.createTonemapReinhard(gamma=1.)
+#        self.toneMap = cv2.createTonemapReinhard(gamma=1.)
         self.toneMap = cv2.createTonemapDrago()
 #        self.linearTonemap = cv2.createTonemap(1.)  #Normalize with Gamma 1.2
 
@@ -68,6 +68,9 @@ class ImageThread (QThread):
 #         self.equalize = False
 #         self.clahe = False
 #        self.clipLimit = 1.
+#        self.alignMTB = cv2.createAlignMTB()
+
+
         self.invgamma = np.empty((1, 256), np.uint8)
         for i in range(256):
             self.invgamma[0, i] = np.clip(pow(i / 255.0, 0.45) * 255.0, 0, 255)
@@ -146,9 +149,9 @@ class ImageThread (QThread):
                 return
             else:
                 if self.merge == MERGE_MERTENS:
-#                    image = self.mergeMertens.process(self.images)
+                    image = self.mergeMertens.process(self.images)
+#                    image = self.linearTonemap.process(image)
                     image = cv2.normalize(image, None, 0., 1., cv2.NORM_MINMAX)
-
                 else:
                     times = np.asarray(self.shutters, dtype=np.float32)/1000000.
 #                    responseDebevec = self.calibrateDebevec.process(self.images, times)
@@ -196,10 +199,10 @@ class ImageThread (QThread):
                 file.write(jpeg)
                 file.close()
             else:
-                if bracket != 0 and self.merge == MERGE_NONE :
-                    cv2.imwrite(self.directory + "/image_%#05d_%#02d.jpg" % (count, bracket), image)
+                if bracket != 0 and self.merge == MERGE_NONE:
+                    cv2.imwrite(self.directory + "/image_%#05d_%#02d.jpg" % (self.currentframe, bracket), image)
                 else :
-                    cv2.imwrite(self.directory + "/image_%#05d.jpg" % count, image)
+                    cv2.imwrite(self.directory + "/image_%#05d.jpg" % self.currentframe, image)
                 
         if isJpeg and bracket == 0 and self.sharpness:
             sharpness = cv2.Laplacian(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.CV_64F).var()
@@ -288,7 +291,7 @@ class ImageThread (QThread):
         self.saveOn = saveFlag
         self.directory = directory
         self.startframe = startframe
-		
+
     def processBgr(self, header):
         image = self.imageSock.receiveArray()  #bgr
         cv2.imwrite(self.directory + "/image_%#05d.tiff" % 0, image)
@@ -305,9 +308,6 @@ class ImageThread (QThread):
                 header = self.imageSock.receiveObject()
                 # if header == None :
                 if header is None:
-                    print('Closed connection')
-                    cv2.destroyAllWindows()
-                    # if self.imageSock != None:
                     print('ImageThread closed connection')
                     self.headerSignal.emit(None) #Signal to disconnect
                     break
