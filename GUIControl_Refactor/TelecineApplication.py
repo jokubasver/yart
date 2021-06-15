@@ -107,7 +107,6 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.displayHistograms = False
         self.displaySharpness = False
         self.mergeType = MERGE_NONE
-        self.onTriggerButton.setEnabled(True)
         #self.onTriggerButton.setEnabled(True)
         self.autoPauseCheckBox.setEnabled(False)
         self.lensAnalyseButton.setEnabled(False)
