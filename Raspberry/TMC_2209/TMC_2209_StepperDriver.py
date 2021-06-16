@@ -73,19 +73,19 @@ class TMC_2209:
 #-----------------------------------------------------------------------
 # constructor
 #-----------------------------------------------------------------------
-    def __init__(self, pin_step, pin_dir, pin_en, baudrate=115200, serialport="/dev/serial0"):
+    def __init__(self, pulse_pin, dir_pin, ena_pin, baudrate=115200, serialport="/dev/serial0"):
         self.tmc_uart = TMC_UART(serialport, baudrate)
-        self._pin_step = pin_step
-        self._pin_dir = pin_dir
-        self._pin_en = pin_en
+        self._pin_step = pulse_pin
+        self._pin_dir = dir_pin
+        self._pin_en = ena_pin
         if(self._loglevel.value >= Loglevel.info.value):
             print("TMC2209: Init")
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self._pin_step, GPIO.OUT)
-        GPIO.setup(self._pin_dir, GPIO.OUT)
-        GPIO.setup(self._pin_en, GPIO.OUT)
-        GPIO.output(self._pin_dir, self._direction)
+        #GPIO.setwarnings(False)
+        #GPIO.setmode(GPIO.BCM)
+        #GPIO.setup(self._pin_step, GPIO.OUT)
+        #GPIO.setup(self._pin_dir, GPIO.OUT)
+        #GPIO.setup(self._pin_en, GPIO.OUT)
+        #GPIO.output(self._pin_dir, self._direction)
         if(self._loglevel.value >= Loglevel.info.value):
             print("TMC2209: GPIO Init finished")      
         self.readStepsPerRevolution()
@@ -101,8 +101,8 @@ class TMC_2209:
     def __del__(self):
         if(self._loglevel.value >= Loglevel.info.value):
             print("TMC2209: Deinit")
-        self.setMotorEnabled(False)
-        GPIO.cleanup() 
+        #self.setMotorEnabled(False)
+        #GPIO.cleanup() 
 
 
 #-----------------------------------------------------------------------
