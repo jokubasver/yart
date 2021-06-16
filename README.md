@@ -13,7 +13,7 @@
  - Add support for RAW capturing and DNG conversion with PyDNG: https://github.com/schoolpost/PyDNG
  
 
-![Screenshot](https://github.com/jokubasver/yart/blob/main/img/capture.jpg)
+![Screenshot](https://github.com/jokubasver/yart/blob/master/img/capture.jpg)
 
 ## Original Text:
 
