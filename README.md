@@ -11,6 +11,9 @@
 
  - Fix framerate get and test buttons (doesn't put the values in automatically, and also gives socket timeout error, otherwise seems to work)
  - Add support for RAW capturing and DNG conversion with PyDNG: https://github.com/schoolpost/PyDNG
+ 
+
+![Screenshot](https://github.com/jokubasver/yart/blob/main/img/capture.jpg)
 
 ## Original Text:
 
