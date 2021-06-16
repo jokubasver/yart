@@ -42,6 +42,7 @@ class TelecineMotor() :
         self.triggerCount = 0
         self.tmc_use = 0
         self.tmc_spreadcycle = 0
+        self.tmc_vref = 0.5
 
     def on(self) :
         self.frameCounter = 0
@@ -76,6 +77,12 @@ class TelecineMotor() :
             self.tmc.readCHOPCONF()
             self.tmc.readDRVSTATUS()
             self.tmc.readGCONF()
+            
+            # Set TMC_2209 vref
+            self.tmc.setVSense(True)
+            self.tmc.setIScaleAnalog(True)
+            self.tmc.setInternalRSense(False)
+            self.tmc.setCurrent(self.tmc_vref * 1000)
 
             if self.tmc_spreadcycle == 1:
                 self.tmc.setSpreadCycle(True)

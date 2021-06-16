@@ -258,7 +258,8 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
             'trigger_level': 1 if self.triggerLevelCheckBox.isChecked() else 0,
             'after_trigger': 1 if self.afterTriggerCheckBox.isChecked() else 0,
             'tmc_use': 1 if self.tmcUseCheckBox.isChecked() else 0,
-            'tmc_spreadcycle': 1 if self.tmcUseSpreadCycle.isChecked() else 0
+            'tmc_spreadcycle': 1 if self.tmcUseSpreadCycle.isChecked() else 0,
+            'tmc_vref': self.tmcVref.value()
             }))
 
 # Get and display motor settings
@@ -281,6 +282,7 @@ class TelecineDialog(QDialog, Ui_TelecineDialog):
         self.captureMotorSpeedBox.setValue(settings['capture_speed'])
         self.tmcUseCheckBox.setChecked(settings['tmc_use'] == 1)
         self.tmcUseSpreadCycle.setChecked(settings['tmc_spreadcycle'] == 1)
+        self.tmcVref.setValue(settings['tmc_vref'])
         return settings
 
     # collect all local settings from GUI and store to self
