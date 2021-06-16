@@ -3,7 +3,7 @@
 ## Changes:
 
  - Includes refactored GUI made by patsib: https://github.com/patsib/yart_gui
- - Support for TMC2209 UART: https://github.com/Chr157i4n/TMC2209_Raspberry_Pi
+ - Support for TMC2209 UART with motor current control, use of stealthChop or spreadCycle: https://github.com/Chr157i4n/TMC2209_Raspberry_Pi
  - Uses stills port with JPEG Quality set to 100
  
 
@@ -11,8 +11,6 @@
 
  - Fix framerate get and test buttons (doesn't put the values in automatically, and also gives socket timeout error, otherwise seems to work)
  - Add support for RAW capturing and DNG conversion with PyDNG: https://github.com/schoolpost/PyDNG
- - Properly disable TMC UART when deselecting it in GUI
- - If using TMC2209 UART - switch to its motor control instead of yart motor control
 
 ## Original Text:
 
