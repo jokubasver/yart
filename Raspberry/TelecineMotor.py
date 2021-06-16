@@ -82,7 +82,8 @@ class TelecineMotor() :
             self.tmc.setVSense(True)
             self.tmc.setIScaleAnalog(True)
             self.tmc.setInternalRSense(False)
-            self.tmc.setCurrent(self.tmc_vref * 1000)
+            self.tmc.setCurrent(int(self.tmc_vref * 1000))
+            print("Motor current (mA): ", int(self.tmc_vref * 1000))
 
             if self.tmc_spreadcycle == 1:
                 self.tmc.setSpreadCycle(True)
